@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 
+
 /**
  * 上传文件
  *
@@ -7,10 +8,10 @@ import request from '@/utils/request'
  * @param {*} form 参数
  * @return {*}
  */
-export function uploadFile(form) {
-  return request({
-    url: '/upload',
-    method: 'post',
-    data: form
-  })
+export function uploadFileAPI(form) {
+    return request({
+      url: "/upload",
+        method: "post",
+        data:form
+    });
 }

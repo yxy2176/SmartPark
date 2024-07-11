@@ -1,25 +1,23 @@
-import request from '@/utils/request'
+import request from "@/utils/request";
+
 
 /**
- * 获取月卡列表
- * @export
- * @param {*} params 参数
- * @return {*}
+ * 获取楼宇列表
+ * @param { page, pageSize } params
+ * @returns
  */
-export function getCardListAPI(params) {
+export function getCardListAPI() {
   return request({
-    url: '/parking/card/list',
-    method: 'get',
-    params
-  })
+    url: "/parking/card/list",
+    params,
+  });
 }
 
+
 /**
- *添加月卡
- *
- * @export
- * @param {*} data 参数
- * @return {*}
+ * 新增月卡
+ * @data
+ * @returns
  */
 export function addCardAPI(data) {
   return request({
@@ -30,11 +28,9 @@ export function addCardAPI(data) {
 }
 
 /**
- *获取月卡详情
- *
- * @export
- * @param {*} id 月卡id
- * @return {*}
+ * 获取月卡详情
+ * @data
+ * @returns
  */
 export function getCardDetailAPI(id) {
   return request({

@@ -1,9 +1,7 @@
 // 专门用来操作cookie的方法包
 // 内部封装了繁琐的操作方法 参数处理 暴露三个函数 get,set,remove
 import Cookies from 'js-cookie'
-// 把所有的常量都单独封装到 一个单独的文件中。目的：方便维护
 import { TOKEN_KEY } from '@/constants/KEY'
-
 // 获取token的方法
 export function getToken() {
   return Cookies.get(TOKEN_KEY)
