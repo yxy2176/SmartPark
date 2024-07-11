@@ -1,7 +1,6 @@
 <template>
   <div class="navbar">
     <div class="right-menu">
-      <el-button @click="$router.push('/bigscreen')">跳转到可视化大屏</el-button>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <!-- 用户名称 -->
@@ -14,14 +13,6 @@
           <a target="_blank">
             <el-dropdown-item> 项目地址 </el-dropdown-item>
           </a>
-          <!-- 组件不能够绑定原生事件 -->
-          <!-- <el-button @click="handleClick">按钮</el-button> -->
-          <!-- el-button能够绑定click事件的原因：el-button内部 实现了 this.$emit('click') -->
-          <!-- el-dropdown-item 不能绑定click事件的原因： el-dropdown-item内部没实现 this.$emit('click') -->
-          <!-- 怎么做才能给组件绑定原生事件呢？ -->
-          <!-- 使用@click.native 可以给组件绑定原生事件 -->
-          <!-- 使用完.native之后。实际上这个原生事件是绑定给了 组件内部最外层的元素 -->
-          <!-- 给组件绑定原生事件时，什么时候加.native 什么是后不加呢？  试一下 -->
           <el-dropdown-item divided @click.native="logout">
             <span style="display: block">退出登录</span>
           </el-dropdown-item>
@@ -36,13 +27,6 @@ export default {
   methods: {
     // 退出登录
     logout() {
-      // 清除token信息
-      this.$store.commit('user/removeToken')
-      // 清空路由规则
-      this.$store.commit('menu/clearMenuList')
-      // 跳转登录页
-      // 记住当前退出页面的路由
-      // console.log(this.$route.fullPath)
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     }
   }
@@ -126,7 +110,6 @@ export default {
 
     .avatar-container {
       margin-right: 30px;
-      margin-left:10px;
       .avatar-wrapper {
         margin-top: 5px;
         position: relative;

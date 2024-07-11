@@ -22,20 +22,11 @@ import router from './router'
 // 注册svg
 import '@/icons'
 
-// 导入permission.js
-// import 除了导入某个成员之外 还可以执行导入的文件
-import './permission'
-
-// 导入自定义指令
-import '@/directive'
-
-import './registerMicroApp.js'
 // 结果： 把element-ui中导出的所有组件 注册成全局组件
 Vue.use(ElementUI)
 
 // 上线之后如果有警告 要不要展示
 Vue.config.productionTip = false
-console.log('BASE_API', process.env)
 
 // vue实例化
 // 注入 router 和 store实例 方便在项目中使用 this.$router  this.$store

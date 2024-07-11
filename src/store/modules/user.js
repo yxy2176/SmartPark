@@ -1,30 +1,15 @@
-import { loginAPI } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
 export default {
   // 命名空间，别忘了最后的d
   namespaced: true,
   // 模块内的state 写法：推荐是个函数写法。但写对象也行
   state: {
-    token: getToken() || ''
+
   },
   mutations: {
-    // mutations中的方法 只有一种调用方式 store.commit('mutations中的方法名')  并没有 方法名() 这种调用方式
-    setToken(state, newToken) {
-      state.token = newToken
-      setToken(newToken)
-    },
-    removeToken(state) {
-      // 清空vuex中的token
-      state.token = ''
-      // 清空cookie中的token
-      removeToken()
-    }
+
   },
   actions: {
-    async loginAction(store, data) {
-      const res = await loginAPI(data)
-      store.commit('setToken', res.data.token)
-    }
+
   },
   getters: {
 
