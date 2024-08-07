@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
     <div class="building-container">
         <!-- 搜索区域 -->
         <div class="search-container">
@@ -104,21 +103,10 @@ export default {
         }
 
     },
-=======
-  <div class="enterprise-container">
-    企业管理
-  </div>
-</template>
-
-<script>
-export default {
-  name: 'Building'
->>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434
 }
 </script>
 
 <style lang="scss" scoped>
-<<<<<<< HEAD
 .department-container {
     padding: 10px;
 }
@@ -152,6 +140,4 @@ export default {
 .form-container {
     padding: 0px 80px;
 }
-=======
->>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434
 </style>
