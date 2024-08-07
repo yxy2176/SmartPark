@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
     <div class="card-container">
         <!-- 搜索区域 -->
         <div class="search-container">
@@ -218,3 +219,7 @@ export default {
     padding: 0px 80px;
 }
 </style>
+=======
+  <div>行车管理-月卡管理</div>
+</template>
+>>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434

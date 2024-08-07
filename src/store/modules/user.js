@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * @Author: JennyYao 344561707@qq.com
  * @Date: 2023-08-14 15:29:03
@@ -9,10 +10,13 @@
 import { loginAPI } from "@/api/user";
 import { setToken } from "@/utils/auth";
 
+=======
+>>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434
 export default {
   // 命名空间，别忘了最后的d
   namespaced: true,
   // 模块内的state 写法：推荐是个函数写法。但写对象也行
+<<<<<<< HEAD
     state: {
       //先从Cookie获取，没有就定义为 空字符串
     token: getToken() || ""
@@ -29,6 +33,16 @@ export default {
             const res = await loginAPI(data)
             store.commit('setToken',res.data.token)
       }
+=======
+  state: {
+
+  },
+  mutations: {
+
+  },
+  actions: {
+
+>>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434
   },
   getters: {},
 };
