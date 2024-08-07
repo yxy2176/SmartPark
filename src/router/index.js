@@ -43,10 +43,13 @@ export const routes = [
       meta: { title: '企业管理' },
       component: () => import('@/views/Park/Enterprise/index')
     }]
+<<<<<<< HEAD
     },
     {
         path: '/addEnterprise',
         component:()=>import('@/views/Park/Enterprise/AddEnterprise.vue')
+=======
+>>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434
   },
 
   {

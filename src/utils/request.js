@@ -7,7 +7,10 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import axios from 'axios'
+<<<<<<< HEAD
 import { Message } from "element-ui";
+=======
+>>>>>>> 148bddaa5a56f45809d8e1092c7a55c3db4d6434
 
 // axios.create  创建一个axios实例  可以通过实例来请求接口
 const service = axios.create({
