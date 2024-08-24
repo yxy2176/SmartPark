@@ -1,13 +1,7 @@
-/*
- * @Author: JennyYao 344561707@qq.com
- * @Date: 2023-08-14 15:29:03
- * @LastEditors: JennyYao 344561707@qq.com
- * @LastEditTime: 2024-08-07 10:20:24
- * @FilePath: \SmartPark\src\utils\request.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 import axios from 'axios'
+import store from '@/store'
 import { Message } from "element-ui";
+import router from '@/router';
 
 // axios.create  创建一个axios实例  可以通过实例来请求接口
 const service = axios.create({
@@ -23,6 +17,10 @@ service.interceptors.request.use(
   config => {
     // config 携带的就是请求信息，并且return不能省略
     // 这个函数通常 配置请求头 携带token
+    const token = store.state.user.token
+    if(token){
+        config.headers.Authorization = token
+    }
     return config
   },
   error => {
@@ -41,10 +39,10 @@ service.interceptors.response.use(
     return response.data
   },
     error => {
+        //token过期
         if (error.response.status == 401) {
-            //token过期
             //清空token + 跳转到登陆页面
-            store.commit('/user/removeToken')
+            store.commit('user/removeToken')
             router.push('/login')
       }
       Message.error(error.response.data.msg)

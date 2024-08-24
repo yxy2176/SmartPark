@@ -6,13 +6,12 @@ import request from "@/utils/request";
  * @param { page, pageSize } params
  * @returns
  */
-export function getCardListAPI() {
+export function getCardListAPI(params) {
   return request({
     url: "/parking/card/list",
     params,
   });
 }
-
 
 /**
  * 新增月卡

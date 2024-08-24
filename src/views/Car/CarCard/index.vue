@@ -18,16 +18,18 @@
             <el-button type="primary">添加月卡</el-button>
             <el-button>批量删除</el-button>
         </div>
+
         <!-- 表格区域 -->
         <div class="table">
             <el-table style="width: 100%" :data="list" @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" />
-                <el-table-column type="index" label="序号" />
-                <el-table-column label="车主名称" />
-                <el-table-column label="联系方式" />
-                <el-table-column label="车牌号码" />
-                <el-table-column label="车辆品牌" />
-                <el-table-column label="剩余有效天数" />
+                <el-table-column type="index" label="序号" :index="indexMethod" />
+                <el-table-column label="车主名称" prop="personName" />
+                <el-table-column label="联系方式" prop="phoneNumber" />
+                <el-table-column label="车牌号码" prop="carNumber" />
+                <el-table-column label="车辆品牌" prop="carBrand" />
+                <el-table-column label="剩余有效天数" prop="totalEffectiveDate" />
+                <el-table-column label="状态" prop="cardStatus" :formatter="formatStatus" />
                 <el-table-column label="操作" fixed="right" width="180">
                     <!-- #default="scope" 等价于 v-slot:default="scope" -->
                     <!-- scope是插槽的作用域对象，包含当前行的数据和属性 -->
@@ -44,9 +46,21 @@
                 </el-table-column>
             </el-table>
         </div>
+
         <div class="page-container">
-            <el-pagination layout="total, prev, pager, next" :total="0" />
+            <!-- page-sizes ：可选择的每一页的页容量 一般格式为 :page-sizes="[100,200,300,400]" -->
+            <!-- page-size ： 当前页的页容量 => page-size的值通常和page-sizes的第一个值保持一致 -->
+            <!-- layout ： 分页的样式  => 比如有prev表示要显示左箭头,pager显示可以选择的跳转页数 -->
+            <!-- size-change ： 页容量发生变化的时候，触发的事件 -->
+             <!-- current-change : 页码发生变化的时候，触发的 -->
+            <el-pagination
+            layout="total, prev, pager, next"
+            :page-size="params.pageSize"
+            :total="total"
+            @current-change="currentChange" />
         </div>
+
+
         <!-- 添加楼宇 -->
         <el-dialog title="添加楼宇" width="580px">
             <!-- 表单接口 -->
@@ -76,18 +90,18 @@
 
 
 <script>
-import { deleteCardAPI } from '@/api/card';
+import { deleteCardAPI, getCardListAPI } from '@/api/card';
 
 export default {
     name: 'card',
     data() {
         return {
             params: {
-                page: 1,
-                pageSize: 2,
-                carNumber: '',
-                personName: '',
-                cardStatus: null
+                page: 1,  //页数
+                pageSize: 2,  //条数
+                carNumber: '', //车牌号
+                personName: '', //车主姓名
+                cardStatus: null //状态：0可用，1已过期  ————当为null时，axios会忽略这个值
             },
             list: [],
             total: 0,
@@ -109,9 +123,34 @@ export default {
 
         }
     },
-
+    created() {
+        this.getCardList()
+    },
     methods: {
-
+        //序号的方法
+        indexMethod(index) {
+            return (this.params.page - 1) * this.params.pageSize + index + 1
+        },
+        //状态一栏的格式化
+        //(row, column, cellValue, index)
+        formatStatus(row) {
+            const MAP = {
+                0: '可用',
+                1: '不可用',
+            }
+            return MAP[row.cardStatus]
+        },
+        //获取月卡列表
+        async getCardList() {
+            const res = await getCardListAPI(this.params)
+            this.list = res.data.rows
+            this.total = res.data.total
+        },
+        //当前页数更新的时候，触发的事件
+        currentChange(val) {
+            this.params.page = val
+            this.getCardList()
+        },
         //编辑卡片 -> 接收一个参数id
         editCard(id) {
             this.$router.push({
@@ -154,13 +193,14 @@ export default {
                 await deleteCardAPI(ids.join(','))
                 this.$message.success('批量删除成功!')
                 this.getCardList()
-            }).catch(()=>{})
+            }).catch(() => { })
         },
 
         // 用户选择的数据
         handleSelectionChange(val) {
             this.selectionVal = val
         },
+
         // 获取月卡列表
         async getCardList() {
             const res = await getCardListAPI(this.params)

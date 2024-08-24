@@ -10,6 +10,9 @@ import "element-ui/lib/theme-chalk/index.css";
 // 引入样式文件
 import "@/styles/index.scss"; // global css
 
+//将滚动事件处理为被动事件
+import 'default-passive-events'
+
 // 引入App根组件
 import App from "./App";
 
