@@ -4,19 +4,19 @@
         <div class="search-container">
             <span class="search-label">车牌号码：</span>
             <!-- clearable属性的作用是为输入框添加一个清除按钮 -->
-            <el-input clearable placeholder="请输入内容" class="search-main" />
+            <el-input v-model="params.carNumber" clearable placeholder="请输入内容" class="search-main" />
             <span class="search-label">车主姓名：</span>
-            <el-input clearable placeholder="请输入内容" class="search-main" />
+            <el-input v-model="params.personName" clearable placeholder="请输入内容" class="search-main" />
             <span class="search-label">状态：</span>
             <el-select v-model="params.cardStatus">
-                <el-option v-for="item in []" :key="item.id" />
+                <el-option v-for="item in statusList" :key="item.value" :label="item.text" :value="item.value" />
             </el-select>
-            <el-button type="primary" class="search-btn">查询</el-button>
+            <el-button type="primary" class="search-btn" @click="doSearch">查询</el-button>
         </div>
         <!-- 新增删除操作区域 -->
         <div class="create-container">
-            <el-button type="primary">添加月卡</el-button>
-            <el-button>批量删除</el-button>
+            <el-button type="primary" @click="$router.push('/car/addMonthCard')">添加月卡</el-button>
+            <el-button @click="batchDeleteCard">批量删除</el-button>
         </div>
 
         <!-- 表格区域 -->
@@ -52,12 +52,9 @@
             <!-- page-size ： 当前页的页容量 => page-size的值通常和page-sizes的第一个值保持一致 -->
             <!-- layout ： 分页的样式  => 比如有prev表示要显示左箭头,pager显示可以选择的跳转页数 -->
             <!-- size-change ： 页容量发生变化的时候，触发的事件 -->
-             <!-- current-change : 页码发生变化的时候，触发的 -->
-            <el-pagination
-            layout="total, prev, pager, next"
-            :page-size="params.pageSize"
-            :total="total"
-            @current-change="currentChange" />
+            <!-- current-change : 页码发生变化的时候，触发的 -->
+            <el-pagination layout="total, prev, pager, next" :page-size="params.pageSize" :total="total"
+                @current-change="currentChange" />
         </div>
 
 
@@ -115,7 +112,7 @@ export default {
                     value: '0'
                 },
                 {
-                    text: '已过期',
+                    text: '不可用',
                     value: '1'
                 }
             ],
@@ -127,11 +124,19 @@ export default {
         this.getCardList()
     },
     methods: {
-        //序号的方法
+        doSearch() {
+            // 1. 把当前的请求页数重置为1
+            this.params.page = 1
+            // 2. 执行getList
+            this.getList()
+        },
+
+        //计算每一页当前序号的方法
         indexMethod(index) {
             return (this.params.page - 1) * this.params.pageSize + index + 1
         },
-        //状态一栏的格式化
+
+        //对状态一栏的格式化
         //(row, column, cellValue, index)
         formatStatus(row) {
             const MAP = {
@@ -140,18 +145,23 @@ export default {
             }
             return MAP[row.cardStatus]
         },
+
         //获取月卡列表
         async getCardList() {
             const res = await getCardListAPI(this.params)
             this.list = res.data.rows
             this.total = res.data.total
         },
+
         //当前页数更新的时候，触发的事件
-        currentChange(val) {
-            this.params.page = val
+        currentChange(page) {
+            // 1. 把请求参数中的page修改为当前点击的页数
+            this.params.page = page
+            // 2. 发送请求重新获取列表
             this.getCardList()
         },
-        //编辑卡片 -> 接收一个参数id
+
+        //编辑卡片 参数id
         editCard(id) {
             this.$router.push({
                 path: '/car/addMonthCard',
@@ -160,6 +170,7 @@ export default {
                 }
             })
         },
+
         //删除月卡
         deleteCard(id) {
             this.$confirm('您确定要删除此数据吗？', '温馨提示', {
@@ -169,52 +180,46 @@ export default {
                 type: 'warning'
             }).then(async () => {
                 await deleteCardAPI(id)
-                this.getCardList()
                 this.$message({
                     type: 'success',
                     message: '删除成功！'
                 })
+                this.getCardList()
+                // //如果删除的数据是该页的最后一条数据，则该页删除，页数-1 （第一页不）
+                // if (this.list.length === 1 && this.params.page > 1) {
+                //     this.params.page--
+                // }
             }).catch((error) => {
                 console.log(error)
             })
         },
 
+        // 筛选出 用户选择的数据
+        handleSelectionChange(val) {
+            this.selectionVal = val
+        },
         // 点击批量删除
         batchDeleteCard() {
             if (this.selectionVal.length <= 0) {
                 this.$message.warning('请先选择您要删除的数据!')
                 return
             }
+            // ids是选择出来的行的数组形式
             const ids = this.selectionVal.map(item => {
                 return item.id
             })
             this.$confirm('您确定要删除这些数据吗？', '温馨提示').then(async () => {
                 // 接口中有提到多个id批量删除时，用join连接
+                // ids : 数组 / ids.join ：会将这个数组中的元素用逗号连接起来，生成一个形如 "id1,id2,id3" 的字符串。
+                // 后端可能要求在删除多个对象时，传递一个逗号分隔的字符串来识别这些对象
+                // 便于在一次API调用中进行批量删除操作
                 await deleteCardAPI(ids.join(','))
                 this.$message.success('批量删除成功!')
                 this.getCardList()
             }).catch(() => { })
         },
 
-        // 用户选择的数据
-        handleSelectionChange(val) {
-            this.selectionVal = val
-        },
 
-        // 获取月卡列表
-        async getCardList() {
-            const res = await getCardListAPI(this.params)
-            this.list = res.data.rows
-            this.total = res.data.total
-        },
-        handleSizeChange(val) {
-            this.params.pageSize = val
-            this.getCardList()
-        },
-        handleCurrentChange(val) {
-            this.params.page = val
-            this.getCardList()
-        },
     }
 
 

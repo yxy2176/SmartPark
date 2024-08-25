@@ -2,7 +2,7 @@ import request from "@/utils/request";
 
 
 /**
- * 获取楼宇列表
+ * 获取月卡列表
  * @param { page, pageSize } params
  * @returns
  */
@@ -15,8 +15,8 @@ export function getCardListAPI(params) {
 
 /**
  * 新增月卡
- * @data
- * @returns
+ * @params data
+ * @return {*}
  */
 export function addCardAPI(data) {
   return request({
@@ -28,8 +28,8 @@ export function addCardAPI(data) {
 
 /**
  * 获取月卡详情
- * @data
- * @returns
+ * @param {*} id
+ * @return {*}
  */
 export function getCardDetailAPI(id) {
   return request({

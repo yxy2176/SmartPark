@@ -32,6 +32,11 @@
                 <div class="form">
                     <el-form ref="feeInfoForm" label-width="100px" :model="feeInfoForm" :rules="feeFormRules">
                         <el-form-item label="有效日期" prop="payTime">
+                            <!--
+                            日期格式中：
+                              1、使用 format ： 指定输入框的格式
+                              2、使用 value-format : 指定绑定值的格式
+                             -->
                             <el-date-picker v-model="feeInfoForm.payTime" type="daterange" range-separator="至"
                                 start-placeholder="开始日期" end-placeholder="结束日期" format="yyyy-MM-dd"
                                 value-format="yyyy-MM-dd" />
@@ -40,7 +45,7 @@
                             <el-input v-model="feeInfoForm.paymentAmount" />
                         </el-form-item>
                         <el-form-item label="支付方式" prop="paymentMethod">
-                            <el-select>
+                            <el-select v-model="feeInfoForm.paymentMethod">
                                 <el-option v-for="item in payMethodList" :key="item.value" :value="item.value"
                                     :label="item.text" />
                             </el-select>
@@ -59,11 +64,12 @@
 </template>
 
 <script>
-import addCardAPI, { getCardDetailAPI } from '@/api/card.js'
+import {addCardAPI, getCardDetailAPI,editCardAPI } from '@/api/card.js'
 export default {
     name: 'addMonnthCard',
     data() {
         return {
+            // 车辆信息
             carInfoForm: {
                 personName: '',
                 phoneNumber: '',
@@ -71,6 +77,7 @@ export default {
                 carBrand: '',
             },
 
+            // 车辆验证规则
             carInfoRules: {
                 personName: [
                     { required: true, message: '车主姓名不可为空', trigger: 'blur' }
@@ -90,6 +97,7 @@ export default {
                 ],
             },
 
+            // 支付方式列表
             payMethodList: [
                 { text: '支付宝', value: 'Alipay' },
                 { text: '微信', value: 'WeChat' },
@@ -124,20 +132,21 @@ export default {
     },
     //写在mounted里也行
     created() {
+        //有 id(编辑)时 ： 回显数据
         if (this.id)
-            this.getCardDetail
+            this.getCardDetail()
     },
 
     methods: {
         async getCardDetail() {
+            // 或者const {data} = ...   =>这样的话下面就不用res.data了，只需要data
             const res = await getCardDetailAPI(this.id)
-            //回填车辆信息的表单
+            // 1. 回填车辆信息的表单
             const { personName, phoneNumber, carNumber, carBrand, carInfoId } = res.data
             this.carInfoForm = {
                 personName, phoneNumber, carNumber, carBrand, carInfoId
             }
-
-            //回填缴费信息表单
+            // 2. 回填缴费信息表单
             const { cardStartDate, cardEndDate, paymentAmount, paymentMethod, rechargeId } = res.data
             this.feeInfoForm = {
                 payTime: [cardStartDate, cardEndDate],
@@ -151,29 +160,35 @@ export default {
         confirmAdd() {
             this.$refs.carInfoForm.validate(valid => {
                 if (valid) {
-                    this.$ref.feeInfoForm.validate(async (valid) => {
+                    this.$refs.feeInfoForm.validate(async (valid) => {
+                        //全部校验通过
                         if (valid) {
-                            //全部校验通过
-                            //TODO 确定
                             //参数处理
                             const requestData = {
                                 ...this.feeInfoForm,
-                                ...this.cardInfoForm,
+                                ...this.carInfoForm,
                                 //单独处理时间
                                 cardStartDate: this.feeInfoForm.payTime[0],
                                 cardEndDate: this.feeInfoForm.payTime[1]
                             }
-                            //因为接口做了校验，多字段不行，所以提交之前把多余的字段删除
+                            //因为接口做了校验，多字段不行，所以提交之前把多余的字段payTime删除
                             delete requestData.payTime
+                            // console.log(requestData)
+
                             if (this.id) {
                                 await editCardAPI(requestData)
+                                this.$message.success('月卡编辑成功')
                             } else {
                                 await addCardAPI(requestData)
+                                //提交以后跳回去
+                                this.$message.success('月卡添加成功')
                             }
-
-                            //提交以后跳回去
-                            this.$message.success('月卡添加成功')
+                            // 后续处理
+                            // 提示用户
+                            this.$message.success(`${this.id ? '更新成功' : '新增成功'}`)
+                            // 跳回列表
                             this.$router.back()
+
                         }
                     })
                 }
@@ -182,7 +197,7 @@ export default {
 
         //重置表单
         resetForm() {
-            //resetFields()的限制：只能清空加了prop表单域的内容
+            // resetFields()的限制：只能清空加了prop表单域的内容
             this.$refs.cardInfoForm.resetFields()
             this.$refs.feeInfoForm.resetFields()
         },

@@ -41,7 +41,7 @@ service.interceptors.response.use(
     error => {
         //token过期
         if (error.response.status == 401) {
-            //清空token + 跳转到登陆页面
+            // 先清空token + 再跳转到登陆页面  （顺序不可颠倒）
             store.commit('user/removeToken')
             router.push('/login')
       }
