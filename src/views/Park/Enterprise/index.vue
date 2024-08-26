@@ -3,7 +3,7 @@
         <!-- 搜索区域 -->
         <div class="search-container">
             <div class="search-label">企业名称：</div>
-            <el-input clearable placeholder="请输入内容" class="search-main" @clear="search" />
+            <el-input v-model="params.name" clearable placeholder="请输入内容" class="search-main" @clear="search" />
             <el-button type="primary" @click="search">查询</el-button>
         </div>
         <div class="create-container">
@@ -27,29 +27,27 @@
             </el-table>
         </div>
         <div class="page-container">
-            <el-pagination
-            layout="total, prev, pager, next"
-            :total="total"
-            :page-size="pageSize"
-            @current-change="handleChange" />
+            <el-pagination layout="total, prev, pager, next" :total="total" :page-size="params.pageSize"
+                @current-change="handleChange" />
         </div>
     </div>
 </template>
 
 <script>
-import { getEnterpriseListAPI, delExterpriseAPI } from '@/api/enterprise';
+import { getEnterpriseListAPI, deleteEnterpriseAPI } from '@/api/enterprise';
 
 export default {
     name:'enterprise',
     data() {
         return {
-            enterpriseList: [],
             params: {
+                name:'', // 收集输入的企业名字，然后可以根据企业名称进行模糊搜索
                 page:1,
-                pageSize:10
+                pageSize:2 //每页的页容量
             },
+
             enterpriseList: [],
-            total:0
+            total:0  //总个数，默认为0
         }
     },
     mounted() {
@@ -57,29 +55,11 @@ export default {
     },
 
     methods: {
-        //删除企业
-        delEnterprise(id) {
-            this.$confirm('您确定要删除该企业吗？', '温馨提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(async () => {
-                await delExterpriseAPI(id)
-                this.getExterpriseList()
-                this.$message({
-                    type: 'success',
-                    message: '删除成功!'
-                }).catch(()=>{})
-            })
-        },
-        //编辑企业
-        toEditPage(id) {
-            this.$router.push({
-                path: 'addEnterprise',
-                query: {
-                    id
-                }
-            })
+        //获取列表
+        async getEnterpriseList() {
+            const res = await getEnterpriseListAPI(this.params)
+            this.enterpriseList = res.data.rows
+            this.total=res.data.total
         },
         //点击查询按钮
         search() {
@@ -87,20 +67,43 @@ export default {
             this.params.page = 1
             this.getEnterpriseList()
         },
-        //计算序号
+
+        //el-pagnation部分
+        //计算每一条记录的序号
         indexMethod(index) {
-            return(this.params.page - 1) * this.params.pageSize + index + 1
+            return (this.params.page - 1) * this.params.pageSize + index + 1
         },
-        //获取列表
-        async getEnterpriseList() {
-            const res = await getEnterpriseListAPI(this.params)
-            this.enterpriseList = res.data.rows
-        },
-        //点击分页
+        //切换页码的时候，获取到的当前点击的是哪个页码
         handleChange(val) {
-            this.params.page=val
-            this.getEnterpriseList
-        }
+            this.params.page = val
+            this.getEnterpriseList()
+        },
+
+        //编辑企业
+        toEditPage(id) {
+            this.$router.push({
+                path: '/addEnterprise',
+                query: {
+                    id
+                }
+            })
+        },
+
+        //删除企业
+        delEnterprise(id) {
+            this.$confirm('您确定要删除该企业吗？', '温馨提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(async () => {
+                await deleteEnterpriseAPI(id)
+                this.getEnterpriseList()
+                this.$message({
+                    type: 'success',
+                    message: '删除成功!'
+                })
+            })
+        },
 
     },
 }

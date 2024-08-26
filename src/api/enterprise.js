@@ -12,6 +12,12 @@ export function getEnterpriseListAPI(params) {
   });
 }
 
+export function getIndustryListAPI() {
+    return request({
+        url: "/park/industry",
+    });
+}
+
 
 /**
  * 添加企业
@@ -42,7 +48,7 @@ export function getEnterpriseDetailAPI(id) {
  * @param {*} data
  * @returns
  */
-export function updateExterpriseAPI(data) {
+export function updateEnterpriseAPI(data) {
   return request({
     url: '/park/enterprise',
     method: 'PUT',
@@ -55,7 +61,7 @@ export function updateExterpriseAPI(data) {
  * @param {*} id
  * @returns
  */
-export function delExterpriseAPI(id) {
+export function deleteEnterpriseAPI(id) {
   return request({
     url: `/park/enterprise/${id}`,
     method: 'DELETE'

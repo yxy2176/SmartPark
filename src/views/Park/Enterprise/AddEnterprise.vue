@@ -26,9 +26,9 @@
                         </el-form-item>
                         <el-form-item label="所在行业" prop="industryCode">
                             <el-select v-model="addForm.industryCode">
+                                <!-- label为展示的文本内容 -->
                                 <el-option v-for="item in industryList" :key="item.industryCode"
-                                    :label="item.industryName" :value="item.industryCode">
-                                </el-option>
+                                    :label="item.industryName" :value="item.industryCode" />
                             </el-select>
                         </el-form-item>
                         <el-form-item label="企业联系人" prop="contact">
@@ -45,7 +45,7 @@
                             <el-upload class="upload-demo" action="#" :http-request="uploadRequest"
                                 :before-upload="beforeUpload">
                                 <el-button size="small" type="primary" @click="confirmAdd">点击上传</el-button>
-                                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                                <div slot="tip" class="el-upload__tip">只能上传jpg/png/jepg文件，且不超过5M</div>
                             </el-upload>
                             <img v-if="id" :src="addForm.businessLicenseUrl" style="width: 100px;">
                         </el-form-item>
@@ -56,18 +56,20 @@
         <footer class="add-footer">
             <div class="btn-container">
                 <el-button>重置</el-button>
-                <el-button type="primary">确定</el-button>
+                <el-button type="primary" @click="confirmAdd">确定</el-button>
             </div>
         </footer>
     </div>
 </template>
 
 <script>
-import { addEnterpriseAPI, getEnterpriseDetailAPI, getEnterpriseListAPI } from '@/api/enterprise'
+import { addEnterpriseAPI, getEnterpriseDetailAPI, getIndustryListAPI, updateEnterpriseAPI } from '@/api/enterprise'
 import { uploadFileAPI } from '@/api/common'
 export default {
+    name:'addEnterprise',
     data() {
         return {
+            //添加企业的表单内容
             addForm: {
                 name: '', // 企业名称
                 legalPerson: '', // 法人
@@ -109,29 +111,32 @@ export default {
         }
     },
     created() {
-        this.getEnterpriseList()
+        this.getIndustryList()
         //如果id有值
         if (this.id) {
             this.getEnterpriseDetail()
         }
     },
+
     computed: {
         id() {
-            return this.$router.query.id
+            return this.$route.query.id
         }
     },
+
     methods: {
         //获取企业详情
         async getEnterpriseDetail() {
-            const res = await getEnterpriseDetailAPI(ths.id)
+            const res = await getEnterpriseDetailAPI(this.id)
             this.addForm=res.data
         },
         //获取行业列表
         async getIndustryList() {
-            const res = await getEnterpriseListAPI()
+            const res = await getIndustryListAPI()
             this.industryList = res.data
         },
-        //上传文件
+
+        // 上传文件
         async uploadRequest(data) {
             //1. 上传逻辑
             //获得file，或者在参数处结构 => ({file})
@@ -143,39 +148,42 @@ export default {
             const res = await uploadFileAPI(formData)
             this.addForm.businessLicenseId = res.data.id
             this.addForm.businessLicenseUrl = res.data.url
-            //2. 单独校验表单，清除错误信息
+
+            //2. 单独校验表单，清除错误信息 [因为el-upload不是基础的表单元素，不能自动清除错误信息]
             //用 businessLicenseId 也行
             this.$refs.addForm.validateField('businessLicenseUrl')
         },
-        //上传文件前的验证
+
+        // 上传文件前的验证
         beforeUpload(file) {
-            const imageType = ['image/jpeg', 'image/png', 'image/jpg','image/gif']
+            const imageType = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml', 'image/bmp']
             if(!imageType.includes(file.type)){
                 this.$message.warning('图片格式不正确')
                 return false
             }
             // 先转换为kb，再转换为mb
             // B / 1024(KB) / 1024(MB)
-            if ((file.size / 1024 / 1024) >2) {
-                this.$message.warning('图片大小不能大于2M')
+            if ((file.size / 1024 / 1024) >5) {
+                this.$message.warning('图片大小不能大于5M')
                 return false
             }
         },
+        // 点击提交按钮 （校验）
         confirmAdd() {
             this.$refs.ruleForm.validate(async(flag) => {
                 if (!flag) return
                 // console.log('可以请求接口了')
                 if (this.id) {
+                    // addForm中多出来的三个字段，给后端传参的时候要把差异项删掉
                     delete this.addForm.businessLicenseName
                     delete this.addForm.industryName
                     delete this.addForm.rent
-                    await updateExterpriseAPI(this.addForm)
-                    this.$message.success('编辑成功')
+                    await updateEnterpriseAPI(this.addForm)
                 } else {
                     await addEnterpriseAPI(this.addForm)
-                    this.$message.success('添加成功')
                 }
-
+                this.$message.success(`${this.id ? '更新成功' : '新增成功'}`)
+                // 或者 this.$router.back()
                 this.$router.go(-1)
             })
         }

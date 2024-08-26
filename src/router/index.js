@@ -46,6 +46,7 @@ export const routes = [
             component: () => import('@/views/Park/Enterprise/index')
         }]
     },
+    // 2-2. 园区管理-企业管理 里的 添加企业
     {
         path: '/addEnterprise',
         component: () => import('@/views/Park/Enterprise/AddEnterprise.vue')
