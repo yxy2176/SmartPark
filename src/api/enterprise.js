@@ -67,3 +67,37 @@ export function deleteEnterpriseAPI(id) {
     method: 'DELETE'
   })
 }
+
+/**
+ * 园区管理 - 查询可租赁楼宇
+ * @returns
+ */
+export function getRentBuildingAPI() {
+    return request({
+        url: '/park/rent/building',
+    })
+}
+
+/**
+ * 添加租赁合同
+ * @param {*} data
+ * @returns
+ */
+export function addRentAPI(data) {
+    return request({
+        url: '/park/enterprise/rent',
+        method: 'POST',
+        data
+    })
+}
+
+/**
+ * 园区管理-企业租赁信息列表-展开查看
+ * @param {*} id 企业id
+ * @returns
+ */
+export function getExpendEnterpriseRentAPI(id) {
+    return request({
+        url:`/park/enterprise/rent/${id}`
+    })
+}

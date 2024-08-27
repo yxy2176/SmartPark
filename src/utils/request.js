@@ -35,9 +35,15 @@ service.interceptors.response.use(
   response => {
     // 第一个函数的执行时机：响应成功 状态为2xx
     // return 也不能省略
-    // response.data 后端返回的原始数据
-    return response.data
-  },
+        // response.data 后端返回的原始数据
+        if (response.data.code != 10000) {
+            Message.error(response.data.msg)
+            return Promise.reject(response.data)
+        } else {
+            return response.data
+        }
+    },
+
     error => {
         //token过期
         if (error.response.status == 401) {
