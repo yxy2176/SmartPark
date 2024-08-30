@@ -6,10 +6,10 @@ import request from "@/utils/request";
  * @returns
  */
 export function getEnterpriseListAPI(params) {
-  return request({
-    url: "/park/enterprise",
-    params,
-  });
+    return request({
+        url: "/park/enterprise",
+        params,
+    });
 }
 
 export function getIndustryListAPI() {
@@ -26,9 +26,9 @@ export function getIndustryListAPI() {
  */
 export function addEnterpriseAPI(data) {
     return request({
-      url: "/park/enterprise",
-      method: "POST",
-      data,
+        url: "/park/enterprise",
+        method: "POST",
+        data,
     });
 }
 
@@ -38,9 +38,9 @@ export function addEnterpriseAPI(data) {
  * @returns
  */
 export function getEnterpriseDetailAPI(id) {
-  return request({
-    url: `/park/enterprise/${id}`
-  })
+    return request({
+        url: `/park/enterprise/${id}`
+    })
 }
 
 /**
@@ -49,11 +49,11 @@ export function getEnterpriseDetailAPI(id) {
  * @returns
  */
 export function updateEnterpriseAPI(data) {
-  return request({
-    url: '/park/enterprise',
-    method: 'PUT',
-    data
-  })
+    return request({
+        url: '/park/enterprise',
+        method: 'PUT',
+        data
+    })
 }
 
 /**
@@ -62,10 +62,10 @@ export function updateEnterpriseAPI(data) {
  * @returns
  */
 export function deleteEnterpriseAPI(id) {
-  return request({
-    url: `/park/enterprise/${id}`,
-    method: 'DELETE'
-  })
+    return request({
+        url: `/park/enterprise/${id}`,
+        method: 'DELETE'
+    })
 }
 
 /**
@@ -96,8 +96,34 @@ export function addRentAPI(data) {
  * @param {*} id 企业id
  * @returns
  */
-export function getExpendEnterpriseRentAPI(id) {
+export function getExpandEnterpriseRentAPI(id) {
     return request({
-        url:`/park/enterprise/rent/${id}`
+        url: `/park/enterprise/rent/${id}`
+    })
+}
+
+/**
+ *删除租赁合同
+ *
+ * @export
+ * @param {*} rentId 合同id
+ * @return {*}
+ */
+export function delRentAPI(rentId) {
+    return request({
+        url: `/park/enterprise/rent/${rentId}`,
+        method: 'DELETE'
+    })
+}
+
+/**
+     *
+     * @param {*} id
+     * @returns
+     */
+export function outRentAPI(id) {
+    return request({
+        url: `/park/enterprise/rent/${id}`,
+        method:'PUT'
     })
 }

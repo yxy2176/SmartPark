@@ -51,6 +51,11 @@ export const routes = [
         path: '/addEnterprise',
         component: () => import('@/views/Park/Enterprise/AddEnterprise.vue')
     },
+    //查看企业的详细信息
+    {
+        path: '/enterpriseDetail/:id',
+        component:()=>import('@/views/Park/Enterprise/EnterpriseDetail.vue')
+    },
     // 3. 行车管理
     {
         path: '/parking',

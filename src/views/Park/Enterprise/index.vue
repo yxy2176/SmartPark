@@ -21,22 +21,51 @@
 
     <!-- 表格区域 -->
     <div class="table">
-      <el-table style="width: 100%" :data="enterpriseList" @expand-change="expandChange">
+      <el-table
+        style="width: 100%"
+        :data="enterpriseList"
+        @expand-change="expandChange"
+      >
         <!-- 展开区域 -->
         <el-table-column type="expand">
-          <template #default>
-            <el-table>
+          <template #default="{ row }">
+            <el-table :data="row.rentList">
               <el-table-column
                 label="租赁楼宇"
                 width="320"
                 prop="buildingName"
               />
               <el-table-column label="租赁起始时间" prop="startTime" />
-              <el-table-column label="合同状态" prop="status" />
-              <el-table-column label="操作" width="180">
+              <el-table-column label="合同状态">
                 <template #default="scope">
-                  <el-button size="mini" type="text">退租</el-button>
-                  <el-button size="mini" type="text">删除</el-button>
+                  <!--
+                    差值表达式支持函数调用吗？支持
+                    调用一个函数的时候 差值表达式的位置渲染的是什么？ 函数执行之后的返回值
+                   -->
+                  <el-tag :type="formatInfoType(scope.row.status)">
+                    {{ formatStatus(scope.row.status) }}</el-tag
+                  >
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="180">
+                <!--
+                  退租：如果当前是退租的状态 禁用  如果不是退租的状态 启用
+                  删除：只有已退租的时候 删除才是启用的 否则就是禁用的
+                 -->
+                <template #default="scope">
+                  <el-button
+                    size="mini"
+                    :disabled="scope.row.status === 3"
+                    type="text"
+                    @click="outRent(scope.row.id)"
+                    >退租</el-button
+                  >
+                  <el-button
+                    size="mini"
+                    :disabled="scope.row.status !== 3"
+                    type="text"
+                    >删除</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
@@ -52,7 +81,7 @@
             <el-button size="mini" type="text" @click="addRent(scope.row.id)"
               >添加合同</el-button
             >
-            <el-button size="mini" type="text">查看</el-button>
+            <el-button size="mini" type="text" @click="$router.push(`/enterpriseDetail/${scope.row.id}`)">查看</el-button>
             <el-button size="mini" type="text" @click="toEditPage(scope.row.id)"
               >编辑</el-button
             >
@@ -155,8 +184,9 @@ import {
   getEnterpriseListAPI,
   deleteEnterpriseAPI,
   getRentBuildingAPI,
-    addRentAPI,
-  getExpendEnterpriseRentAPI,
+  addRentAPI,
+  getExpandEnterpriseRentAPI,
+  outRentAPI,
 } from "@/api/enterprise";
 import { uploadFileAPI } from "@/api/common";
 
@@ -209,7 +239,12 @@ export default {
     //获取列表
     async getEnterpriseList() {
       const res = await getEnterpriseListAPI(this.params);
-      this.enterpriseList = res.data.rows;
+      this.enterpriseList = res.data.rows.map((item) => {
+        return {
+          ...item,
+          rentList: [], // 合同列表
+        };
+      });
       this.total = res.data.total;
     },
     //点击查询按钮
@@ -271,7 +306,7 @@ export default {
         type: 0, // 合同类型
         rentTime: [], // 合同时间
       };
-      this.$refs.upload.clearFields();
+      this.$refs.upload.clearFiles();
       this.$refs.addForm.validateField("contractId");
     },
 
@@ -314,15 +349,20 @@ export default {
     },
     //添加合同弹框里的确认键
     confirmAdd() {
-      this.$refs.addForm.validate(async (flag) => {
+      this.$refs.addForm.validate((flag) => {
         if (!flag) return;
-        // 或 this.rentForm.startTime = this.rentForm.rentTime[0]
-        const [startTime, endTime] = this.rentForm.rentTime;
-        this.rentForm.startTime = startTime;
-        this.rentForm.endTime = endTime;
-        //   把多余字段删除后 再提交给后端接口
-        delete rentForm.rentTime;
-        await addRentAPI(this.rentForm);
+        const { buildingId, contractId, contractUrl, type, enterpriseId } =
+          this.rentForm;
+        const reqData = {
+          buildingId,
+          contractId,
+          contractUrl,
+          type,
+          enterpriseId,
+          startTime: this.rentForm.rentTime[0],
+          endTime: this.rentForm.rentTime[1],
+        };
+        addRentAPI(reqData);
         this.$message.success("添加合同成功");
         // 添加成功后刷新一下列表，因为添加后页面可能会改变
         this.getEnterpriseList();
@@ -335,20 +375,72 @@ export default {
       this.rentForm.contractId = "";
       this.rentForm.contractUrl = "";
       this.$refs.addForm.validateField("contractId");
-      },
+    },
 
-      //   点击展开或者关闭都会触发该事件
-      // row ： 当前展开/关闭那一行的数据
+    //   点击展开或者关闭都会触发该事件
+    // row ： 当前展开/关闭那一行的数据
     // expandedRows ： 所有展开的数据都在里面（数组形式）
-      async expendChange(row, expandedRows) {
-        //判断当前行的状态是展开的还是关闭的
-          const isInclude = expandedRows.find(item => item.id === row.id)
-        if(!isInclude) return
-          const res = await getExpendEnterpriseRentAPI(row.id)
-          console.log(res)
-
-    }
+    async expandChange(row, expandedRows) {
+      //判断当前行的状态是展开的还是关闭的
+      const isInclude = expandedRows.find((item) => item.id === row.id);
+      if (!isInclude) return;
+      const res = await getExpandEnterpriseRentAPI(row.id);
+      //   console.log(res)
+      row.rentList = res.data;
+    },
+    formatInfoType(status) {
+      const MAP = {
+        0: "warning",
+        1: "success",
+        2: "info",
+        3: "danger",
+      };
+      // return 格式化之后的中文显示
+      return MAP[status];
+    },
+    formatStatus(status) {
+      //   console.log(status);
+      const MAP = {
+        0: "待生效",
+        1: "生效中",
+        2: "已到期",
+        3: "已退租",
+      };
+      // return 格式化之后的中文显示
+      return MAP[status];
+    },
   },
+
+  // 删除合同
+  delRent(id) {
+    this.$confirm("确认删除此合同吗吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    })
+      .then(async () => {
+        // 1. 调用接口
+        await delRentAPI(id);
+        // 2. 重新拉取列表
+        this.getEnterpriseList();
+        this.$message({
+          type: "success",
+          message: "删除成功!",
+        });
+      })
+      .catch(() => {
+        this.$message({
+          type: "info",
+          message: "取消删除",
+        });
+      });
+    },
+    outRent(id) {
+        this.$confirm('您确定要退租吗？', '温馨提示').then(async () => {
+            await outRentAPI(id)
+            this.$message.success('退租成功')
+        }).catch(()=>{})
+  }
 };
 </script>
 
