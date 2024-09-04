@@ -1,90 +1,101 @@
+/*
+ * @Author: JennyYao 344561707@qq.com
+ * @Date: 2024-07-16 16:14:02
+ * @LastEditors: JennyYao 344561707@qq.com
+ * @LastEditTime: 2024-09-03 20:49:57
+ * @FilePath: \SmartPark\src\permission.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import router from "@/router";
 import store from "@/store";
-// import asyncRoutes from "@/router/asyncRoutes";
+import asyncRoutes from "./router/asyncRoutes";
 
 // 路由的白名单
 const whiteList = ["/login", "/404"];
 
-// // 获取一级权限的标识
-// function getFirstRoutePermission(permission) {
-//   const firstPermArr = permission.map((item) => {
-//     return item.split(":")[0];
-//   });
+// 获取一级路由权限标识
+function getFirstRoutePermission(permissions) {
+    const permissionArr = permissions.map(item => {
+        return item.split(':')[0]
+    })
+    // 去重后再返回
+    // Set不能存重复的数据,可以达到去重的目的(但是,不是一个真实的数组)
+    // 或者return Array.from(new Set(permissionArr))
+    return [...new Set(permissionArr)]
 
-//   // 去重
-//   // Set 不能存重复的数据（去重） 但是它不是一个真实的数组
-//   return Array.from(new Set(firstPermArr));
-// }
+}
 
-// // 获取二级权限标识
-// function getSecondRoutePermission(permission) {
-//   const secondPermArr = permission.map((item) => {
-//     const arr = item.split(":");
-//     return `${arr[0]}:${arr[1]}`;
-//   });
-//   return Array.from(new Set(secondPermArr));
-// }
-// // 根据一级二级权限标识 筛选出对应可展示的动态路由
-// function getRoutes(firstPermission, secondPermission, asyncRoutes) {
-//   // 判断当前登录人是不是管理员。如果是管理员就不进行筛选了
-//   if (firstPermission.includes("*")) {
-//     return asyncRoutes;
-//   }
-//   const firstRoutes = asyncRoutes.filter((item) =>
-//     firstPermission.includes(item.permission)
-//   );
-//   // console.log('firstRoutes', firstRoutes)
-//   const routes = firstRoutes.map((item) => {
-//     return {
-//       ...item,
-//       children: item.children.filter((child) =>
-//         secondPermission.includes(child.permission)
-//       ),
-//     };
-//   });
-//   return routes;
-// }
+// 获取二级路由权限标识
+function getSecondRoutePermission(permissions) {
+    const permissionArr = permissions.map(item => {
+        const arr = item.split(':')
+        return `${arr[0]}:${arr[1]}`
+    })
+    // console.log(permissionArr);
+
+    return [...new Set(permissionArr)]
+}
+
+function getRoutes(firstPermission, secondPermission, asyncRoutes) {
+    // 当为管理员时：
+    if (firstPermission.includes('*')) return asyncRoutes
+    // 首先筛选一级
+    const firstRoute = asyncRoutes.filter(route => {
+        firstPermission.includes(route.permission)
+    })
+    // 在筛选：在满足一级的条件下，二级满足的
+    const filteredRoutes = firstRoute.map(item => {
+        return {
+            ...item,
+            children: item.children.filter(childRoute => {
+                secondPermission.includes(childRoute.permission)
+            })
+
+        }
+    })
+    return filteredRoutes
+}
 
 router.beforeEach(async (to, from, next) => {
     // console.log('to', to)
     // console.log('from',from)
-  // to：跳转的路由对象
-  // from：从哪里来
-  // next: 放行next()  重定向next(路径)
-  // console.log('to', to)
-  // console.log('from', from)
+    // to：跳转的路由对象
+    // from：从哪里来
+    // next: 放行next()  重定向next(路径)
+    // console.log('to', to)
+    // console.log('from', from)
     const token = store.state.user.token;
-  // 有token
-  if (token) {
-    if (to.path === "/login") {
-      next("/");
+    // 有token
+    if (token) {
+        if (to.path === "/login") {
+            next("/");
+        } else {
+            next();
+            // 1.拿到用户的权限信息
+            const permissions = await store.dispatch('menu/getUserPermissions')
+            console.log(permissions);
+            // 2.根据权限标识,筛选出对应的一级路由标识
+            const firstPermission = getFirstRoutePermission(permissions)
+            console.log("一级路由标识:", firstPermission);
+
+            // 3.  根据权限标识,筛选出二级的路由标识
+            const secondPermission = getSecondRoutePermission(permissions)
+            console.log("二级路由标识:", secondPermission);
+
+            // console.log(asyncRoutes);
+            const filteredRoutes = getRoutes(firstPermission, secondPermission, asyncRoutes)
+
+            //4.addRoute动态添加  ---> 4.1:先把筛选后的可以的每个路由都添加到路由对象中
+            filteredRoutes.forEach(route => router.addRoute(route))
+            // 4.2 再把筛选之后的路由添加到vuex中（用于之后随时渲染）
+            store.commit('menu/setMenuList', filteredRoutes)
+        }
+        // 没有token
     } else {
-      next();
-    //   // 1.拿到用户的权限信息
-    //   const permission = await store.dispatch("menu/getUserPermission");
-    //   console.log("全部的权限标识", permission);
-    //   // 2.根据权限标识 筛选出对应的一级路由的标识
-    //   const firstPermission = getFirstRoutePermission(permission);
-    //   console.log("一级权限标识", firstPermission);
-    //   // 3.根据权限标识 筛选出对应的二级路由的标识
-    //   const secondPermission = getSecondRoutePermission(permission);
-    //   console.log("二级权限标识", secondPermission);
-    //   // 4.根据一级权限标识和二级权限标识和动态路由进行筛选
-    //   console.log("所有的动态路由", asyncRoutes);
-    //   const routes = getRoutes(firstPermission, secondPermission, asyncRoutes);
-    //   console.log("筛选之后的动态路由", routes);
-    //   // 5.把筛选后的路由 展示在左侧
-    //   // 5.1先把筛选之后的路由添加到路由对象中（跳转）
-    //   routes.forEach((item) => router.addRoute(item));
-    //   // 5.2再把筛选之后的路由添加到vuex中（渲染）
-    //   store.commit("menu/setMenuList", routes);
-      }
-  // 没有token
-  } else {
-    if (whiteList.includes(to.path)) {
-      next();
-    } else {
-      next("/login");
+        if (whiteList.includes(to.path)) {
+            next();
+        } else {
+            next("/login");
+        }
     }
-  }
 });

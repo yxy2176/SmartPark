@@ -7,7 +7,7 @@ export default {
     methods: {
         async getIndustry(){
             const res = await getIndustryAPI()
-            console.log(res)
+            // console.log(res)
         }
     }
 }

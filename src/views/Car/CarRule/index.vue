@@ -5,7 +5,7 @@
       <el-button @click="exportToExcel">导出Excel</el-button>
     </div>
     <!-- 增加停车计费规则的弹框 -->
-    <AddRule :dialog-visible.sync="dialogVisible" />
+    <AddRule ref="addRule" :dialog-visible.sync="dialogVisible" />
     <!-- 表格区域 -->
     <div class="table">
       <el-table :data="ruleList" style="width: 100%">
@@ -22,8 +22,12 @@
         <el-table-column label="计费规则" prop="ruleNameView" />
         <el-table-column label="操作" fixed="right" width="120">
           <template #default="scope">
-            <el-button size="mini" type="text">编辑</el-button>
-            <el-button size="mini" type="text">删除</el-button>
+            <el-button size="mini" type="text" @click="editRule(scope.row.id)"
+              >编辑</el-button
+            >
+            <el-button size="mini" type="text" @click="delRule(scope.row.id)"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -40,7 +44,7 @@
 </template>
 
 <script>
-import { getRuleListAPI } from "@/api/car";
+import { deleteRuleAPI, getRuleListAPI } from "@/api/car";
 import { utils, writeFileXLSX } from "xlsx";
 import AddRule from "@/views/Car/components/AddRule.vue";
 export default {
@@ -63,6 +67,7 @@ export default {
     this.getRuleList();
   },
   methods: {
+    // 获取当前计费规则的列表
     async getRuleList() {
       const res = await getRuleListAPI(this.params);
       this.ruleList = res.data.rows;
@@ -128,10 +133,29 @@ export default {
     //   添加计费规则
     addFeeRule() {
       this.dialogVisible = true;
-      },
+      this.$refs.addRule.title = "添加规则";
+    },
     //   closeDialog() {
     //     this.dialogVisible = false;
     // }
+    // 删除
+    delRule(id) {
+      this.$confirm("您确定要删除该规则吗？", "温馨提示").then(async () => {
+        await deleteRuleAPI(id);
+        this.$message.success("删除成功");
+        if (this.ruleList.length === 1 && this.params.page > 1) {
+          this.params.page--;
+        }
+        this.getRuleList();
+      });
+    },
+    // 编辑
+    editRule(id) {
+      this.dialogVisible = true;
+      this.$refs.addRule.getParkingRule(id);
+      this.$refs.addRule.title = "修改规则";
+    },
+
   },
 };
 </script>

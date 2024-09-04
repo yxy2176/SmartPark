@@ -4,7 +4,7 @@
     <el-dialog
       :visible="dialogVisible"
       width="680px"
-      title="新增规则"
+      :title="title"
       @close="closeDialog"
       :close-on-click-modal="false"
     >
@@ -130,7 +130,7 @@
 </template>
 
 <script>
-import { addFeeRuleAPI } from "@/api/car";
+import { addFeeRuleAPI ,editParkingRuleAPI,getParkingRuleAPI } from "@/api/car";
 export default {
   name: "addRule",
   data() {
@@ -183,7 +183,8 @@ export default {
           { required: true, message: "请输入超出金额", trigger: "blur" },
         ],
       },
-    //   feeRuleProp: "", //一打开是默认第一个时长收费，就在durationTime和durationPrice二选一选一个就行
+      //   feeRuleProp: "", //一打开是默认第一个时长收费，就在durationTime和durationPrice二选一选一个就行
+      title: "添加规则",
     };
   },
   //控制弹层的隐藏和显示
@@ -229,11 +230,22 @@ export default {
     confirmAdd() {
       this.$refs.addForm.validate(async (flag) => {
         if (!flag) return;
-        await addFeeRuleAPI(this.addForm);
-        this.$message.success("添加成功");
-          this.closeDialog();
-        this.$parent.getRuleList()
+        if (this.addForm.id) {
+          await editParkingRuleAPI(this.addForm);
+          this.$message.success("编辑成功");
+        } else {
+          await addFeeRuleAPI(this.addForm);
+          this.$message.success("添加成功");
+        }
+        this.closeDialog();
+        //   或者使用this.$emit('getList')
+        // 然后再在父组件使用子组件时候 ： <AddRule @getList='xxx' />   xxx为子组件想要使用的父里的函数
+        this.$parent.getRuleList();
       });
+      },
+    async getParkingRule(id) {
+      const res = await getParkingRuleAPI(id);
+      this.addForm = res.data;
     },
   },
 };

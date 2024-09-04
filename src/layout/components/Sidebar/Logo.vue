@@ -1,6 +1,8 @@
 <template>
   <div class="sidebar-logo-container">
     <img src="@/assets/hmzs-logo.png" class="sidebar-logo">
+     <!-- <img src="@/assets/park.png" class="sidebar-logo"> -->
+     <!-- 智慧园区 -->
   </div>
 </template>
 

@@ -78,7 +78,7 @@
         <el-table-column label="联系电话" prop="contactNumber" />
         <el-table-column label="操作">
           <template #default="scope">
-            <el-button size="mini" type="text" @click="addRent(scope.row.id)"
+            <el-button v-permission="'park:rent:add_surrender'" size="mini" type="text" @click="addRent(scope.row.id)"
               >添加合同</el-button
             >
             <el-button size="mini" type="text" @click="$router.push(`/enterpriseDetail/${scope.row.id}`)">查看</el-button>

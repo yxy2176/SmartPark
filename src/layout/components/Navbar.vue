@@ -33,6 +33,7 @@ export default {
     methods: {
         // 退出登录
         logout() {
+            this.$store.commit('menu/clearMenuList')
             //清除token信息
             this.$store.commit('user/removeToken')
             //跳转登录页

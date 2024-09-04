@@ -1,3 +1,11 @@
+/*
+ * @Author: JennyYao 344561707@qq.com
+ * @Date: 2024-08-07 16:48:23
+ * @LastEditors: JennyYao 344561707@qq.com
+ * @LastEditTime: 2024-09-03 19:02:11
+ * @FilePath: \SmartPark\src\router\index.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import Vue from 'vue'
 import Router from 'vue-router'
 
@@ -5,6 +13,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import asyncRoutes from './asyncRoutes'
 
 export const routes = [
     {
@@ -27,25 +36,6 @@ export const routes = [
             meta: { title: '工作台', icon: 'el-icon-data-board' }
         }]
     },
-    // 2. 园区管理
-    {
-        path: '/park',
-        component: Layout,
-        permission: 'park',
-        meta: { title: '园区管理', icon: 'el-icon-office-building' },
-        children: [{
-            path: 'building',
-            permission: 'park:building',
-            meta: { title: '楼宇管理' },
-            component: () => import('@/views/Park/Building/index')
-        },
-        {
-            path: 'enterprise',
-            permission: 'park:enterprise',
-            meta: { title: '企业管理' },
-            component: () => import('@/views/Park/Enterprise/index')
-        }]
-    },
     // 2-2. 园区管理-企业管理 里的 添加企业
     {
         path: '/addEnterprise',
@@ -54,77 +44,17 @@ export const routes = [
     //查看企业的详细信息
     {
         path: '/enterpriseDetail/:id',
-        component:()=>import('@/views/Park/Enterprise/EnterpriseDetail.vue')
-    },
-    // 3. 行车管理
-    {
-        path: '/parking',
-        component: Layout,
-        permission: 'parking',
-        meta: { title: '行车管理', icon: 'el-icon-guide' },
-        children: [{
-            path: 'area',
-            permission: 'parking:area',
-            component: () => import('@/views/Car/CarArea'),
-            meta: { title: '区域管理' }
-        }, {
-            path: 'card',
-            permission: 'parking:card',
-            component: () => import('@/views/Car/CarCard'),
-            meta: { title: '月卡管理' }
-        }, {
-            path: 'pay',
-            permission: 'parking:payment',
-            component: () => import('@/views/Car/CarPay'),
-            meta: { title: '停车缴费管理' }
-        },
-        {
-            path: 'rule',
-            permission: 'parking:rule',
-            component: () => import('@/views/Car/CarRule'),
-            meta: { title: '计费规则管理' }
-        }]
+        component: () => import('@/views/Park/Enterprise/EnterpriseDetail.vue')
     },
     //添加月卡
     {
         path: '/car/addMonthCard',
         component: () => import('@/views/Car/CarCard/addMonthCard.vue')
     },
-    // 4.一体杆管理
+
     {
-        path: '/pole',
-        component: Layout,
-        permission: 'pole',
-        meta: { title: '一体杆管理', icon: 'el-icon-refrigerator' },
-        children: [{
-            path: 'info',
-            permission: 'pole:info',
-            component: () => import('@/views/Rod/RodManage'),
-            meta: { title: '一体杆管理' }
-        }, {
-            path: 'waring',
-            permission: 'pole:warning',
-            component: () => import('@/views/Rod/RodWarn'),
-            meta: { title: '告警记录' }
-        }]
-    },
-    // 5.系统管理
-    {
-        path: '/sys',
-        component: Layout,
-        permission: 'sys',
-        meta: { title: '系统管理', icon: 'el-icon-setting' },
-        children: [{
-            path: 'role',
-            permission: 'sys:role',
-            component: () => import('@/views/System/Role/index'),
-            meta: { title: '角色管理' }
-        }, {
-            path: 'user',
-            permission: 'sys:user',
-            component: () => import('@/views/System/Employee/index'),
-            meta: { title: '员工管理' }
-        }]
+        path: '/sys/addRole',
+        component: () => import('@/views/System/Role/AddRole.vue')
     },
     {
         path: '/404',
@@ -138,17 +68,11 @@ const createRouter = () => new Router({
     // mode: 'history', // require service support
     mode: 'history',
     scrollBehavior: () => ({ y: 0 }),
-    routes: routes
+    // routes: [...routes,...asyncRoutes]
+    routes
 })
 
-// function createRouter() {
-//   return new Router({
-//     // mode: 'history', // require service support
-//     mode: 'history',
-//     scrollBehavior: () => ({ y: 0 }),
-//     routes: routes
-//   })
-// }
+
 
 const router = createRouter()
 
@@ -157,6 +81,7 @@ export function resetRouter() {
     // 得到一个全新的router实例对象
     const newRouter = createRouter()
     // 使用新的路由记录覆盖掉老的路由记录
+    // matcher属性里面存的是：路由规则
     router.matcher = newRouter.matcher
 }
 

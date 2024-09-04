@@ -21,7 +21,12 @@ export function loginAPI(data) {
 
 export function getIndustryAPI() {
     return request({
-        url: '/park/industry'
-        
+        url:'/park/industry'
+    })
+}
+
+export function getProfileAPI() {
+    return request({
+        url: '/park/user/profile',
     })
 }
